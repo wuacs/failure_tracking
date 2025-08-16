@@ -1,0 +1,11 @@
+[project]
+name = "failure_tracking"
+version = "0.1.0"
+description = "Addon for Anki"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "anki>=25.7.5",
+    "aqt>=25.7.5",
+    "pyqt6>=6.9.1",
+]
