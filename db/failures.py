@@ -1,7 +1,7 @@
-from typing import List
+from typing import Dict, List, Literal, Optional
 from aqt import mw
 from ..model import CardFailure
-from .utils import execute_select_query
+from .tags import assign_tag_to_failure
 from datetime import datetime, timezone
 
 def ensure_schema():
@@ -9,43 +9,71 @@ def ensure_schema():
     CREATE TABLE IF NOT EXISTS failures (
     failure_id INTEGER PRIMARY KEY AUTOINCREMENT,
     card_id INTEGER NOT NULL REFERENCES cards(id) ON DELETE CASCADE,
-    category_id INTEGER NOT NULL,
     reason TEXT NOT NULL,
-    created_at TEXT NOT NULL)""" #date is stored as ISO8601 string
+    created_at TEXT NOT NULL)""" #date is stored as ISO8601 string no microseconds
     mw.col.db.execute(query)
+    mw.col.db.execute("CREATE INDEX IF NOT EXISTS idx_failures_created_at ON failures(created_at)")
+    mw.col.db.execute("CREATE INDEX IF NOT EXISTS idx_failures_card_id ON failures(card_id)")
 
-def insert_failure(card_id: int, category_id: int, reason: str):
-    if not card_id:
-        return
+def _utc_now_iso_seconds() -> str:
+    # 2025-08-17T14:22:05+00:00 (no microseconds)
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+def insert_failure(card_id: int, tags_ids: Optional[List[int]], reason: str) -> Optional[int]:
+    """
+    Returns the failure added ID if insertion was successful, None otherwise.
+    """
     ensure_schema()
+    if not reason.strip():
+        return None
     mw.col.db.execute(
-        "INSERT INTO failures(card_id, category_id, reason, created_at) VALUES (?,?,?,?)",
-        card_id, category_id, reason, datetime.now(timezone.utc).isoformat()
+        "INSERT INTO failures(card_id, reason, created_at) VALUES (?,?,?)",
+        card_id, reason.strip(), _utc_now_iso_seconds()
     )
+    failure_id = mw.col.db.scalar("SELECT last_insert_rowid()")
+    for tag_id in tags_ids or []:
+        assign_tag_to_failure(failure_id, tag_id)
     mw.col.setMod()
+    return failure_id
 
-def recent_failures(limit: int = None) -> List[CardFailure]:
+def failures_filtered(
+    deck_id: Optional[int] = None,
+    card_id: Optional[int] = None,
+    tag_id: Optional[int] = None,
+    limit: Optional[int] = None,
+    interval_iso8601: Optional[Dict[Literal["from", "to"], str]] = None
+) -> list[CardFailure]:
     ensure_schema()
-    result = execute_select_query("SELECT failure_id, card_id, reason, category_id, created_at FROM failures ORDER BY failure_id DESC", limit)
-    return [CardFailure(failure_id=row[0], card_id=row[1], reason=row[2], category_id=row[3], created_at=row[4]) for row in result]
-
-def get_failures_by_category(category: str, limit: int = None) -> List[CardFailure]:
-    ensure_schema()
-    query = "SELECT failure_id, card_id, reason, category_id, created_at FROM failures WHERE category_id = ? ORDER BY failure_id DESC"
-    return [CardFailure(failure_id=row[0], card_id=row[1], reason=row[2], category_id=row[3], created_at=row[4]) for row in execute_select_query(query, category, limit)]
-
-def get_failures_by_card(card_id: int, limit: int = None) -> List[CardFailure]:
-    ensure_schema()
-    query = "SELECT failure_id, card_id, reason, category_id, created_at FROM failures WHERE card_id = ? ORDER BY failure_id DESC"
-    return [CardFailure(failure_id=row[0], card_id=row[1], reason=row[2], category_id=row[3], created_at=row[4]) for row in execute_select_query(query, card_id, limit)]
-
-def get_failures_by_deck(deck_id: int, limit: int = None) -> List[CardFailure]:
-    ensure_schema()
-    query = """
-    SELECT f.failure_id, f.card_id, f.reason, f.category_id, f.created_at
+    sql = """
+    SELECT f.failure_id, f.card_id, f.reason, f.created_at
     FROM failures f
     JOIN cards c ON c.id = f.card_id
-    WHERE c.did = ?
-    ORDER BY f.failure_id DESC
     """
-    return [CardFailure(failure_id=row[0], card_id=row[1], reason=row[2], category_id=row[3], created_at=row[4]) for row in execute_select_query(query, deck_id, limit)]
+    where = []
+    params: list = []
+    if deck_id is not None:
+        where.append("c.did = ?")
+        params.append(deck_id)
+    if card_id is not None:
+        where.append("f.card_id = ?")
+        params.append(card_id)
+    if interval_iso8601  is not None:
+        where.append("f.created_at BETWEEN ? AND ?")
+        params.append(interval_iso8601["from"])
+        params.append(interval_iso8601["to"])
+    if tag_id is not None:
+        where.append(" ? IN (SELECT tag_id FROM failure_tags WHERE failure_id = f.failure_id)")
+        params.append(tag_id)
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+    sql += " ORDER BY f.failure_id DESC"
+    if limit is not None:
+        sql += " LIMIT ?"
+        params.append(limit)
+    rows = mw.col.db.all(sql, *params)
+    return [CardFailure(
+        failure_id=r[0],
+        card_id=r[1],
+        reason=r[2],
+        created_at=datetime.fromisoformat(r[3]).astimezone(timezone.utc),
+    ) for r in rows]
