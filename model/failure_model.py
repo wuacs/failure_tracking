@@ -9,7 +9,6 @@ class CardFailureTableModel(QAbstractTableModel):
         self._columns = [
             ("Failure ID", "failure_id"),
             ("Card ID", "card_id"),
-            ("Category ID", "category_id"),
             ("Reason", "reason"),
             ("Created At", "created_at"),
         ]

@@ -16,16 +16,6 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <widget class="QListView" name="filter_list_view">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>10</y>
-     <width>491</width>
-     <height>421</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QScrollBar" name="failure_list_scrollbar">
    <property name="geometry">
     <rect>
@@ -219,6 +209,16 @@
    </property>
    <property name="text">
     <string>Search</string>
+   </property>
+  </widget>
+  <widget class="QTableView" name="failure_table">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>10</y>
+     <width>491</width>
+     <height>421</height>
+    </rect>
    </property>
   </widget>
  </widget>

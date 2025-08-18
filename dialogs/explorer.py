@@ -3,11 +3,12 @@ from aqt import QComboBox, QDialog, QPushButton, QWidget, mw, QDateTime, QDateEd
 from ..db import failures_filtered, list_tags
 from ..model import CardFailure, CardFailureTableModel, FailureTag
 from ..ui import Ui_FailureExplorer
-required = ["edit_selected_failure", "delete_selected_failure", 
-            "failure_table", "deck_filter_combobox", "tag_filter_combobox",
-            "filter_from_date", "filter_to_date", "search_failures_button"]
+
 ALL_ID = - 1
 class ExploreFailures(QDialog):
+    required = ["edit_selected_failure", "delete_selected_failure", 
+            "failure_table", "deck_filter_combobox", "tag_filter_combobox",
+            "filter_from_date", "filter_to_date", "search_failures_button"]
     def _keep_to_ahead(self):
         if self.widgets["filter_from_date"].dateTime() > self.widgets["filter_to_date"].dateTime():
             self.widgets["filter_to_date"].setDateTime(min(self.widgets["filter_from_date"].dateTime().addDays(1), QDateTime.currentDateTime()))
@@ -24,22 +25,26 @@ class ExploreFailures(QDialog):
         for deck_id in mw.col.decks.all_names_and_ids():
             deck_combobox.addItem(deck_id.name, userData=deck_id.id)
     def _on_search(self):
-        # retrieve filters
-        failure_table = cast(QTableView, self.widgets["failure_table"])
+        table = self.widgets["failure_table"]
         deck: QComboBox = cast(QComboBox, self.widgets["deck_filter_combobox"])
         tag: QComboBox = cast(QComboBox, self.widgets["tag_filter_combobox"])
-        from_date_qt: QDateTime = cast(QDateTime, self.widgets["filter_from_date"])
-        to_date_qt: QDateTime = cast(QDateTime, self.widgets["filter_to_date"])
-        deck_id: Optional[int] = deck.currentData() if deck.currentData() != ALL_ID else None
-        tag_id: Optional[int] = tag.currentData() if tag.currentData() != ALL_ID else None
-        from_date: str = from_date_qt.toUTC().toPyDateTime().strftime("%Y-%m-%dT%H:%M:%S%z")
-        to_date: str = to_date_qt.toUTC().toPyDateTime().strftime("%Y-%m-%dT%H:%M:%S%z")
-        failures: list[CardFailure] = failures_filtered(
-            deck_id=deck_id,
-            tag_id=tag_id,
-            interval_iso8601={"from": from_date, "to": to_date}
-        )
-        failure_table.setModel(CardFailureTableModel(failures))
+        deck_id = deck.currentData()
+        if deck_id == ALL_ID:
+            deck_id = None
+        tag_id = tag.currentData()
+        if tag_id == ALL_ID:
+            tag_id = None
+        from_edit = cast(QDateEdit, self.widgets["filter_from_date"])
+        to_edit = cast(QDateEdit, self.widgets["filter_to_date"])
+        from_dt = from_edit.dateTime().toUTC().toPyDateTime()
+        to_dt = to_edit.dateTime().toUTC().toPyDateTime()
+        interval = {
+            "from": from_dt.strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+            "to": to_dt.strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+        }
+
+        failures = failures_filtered(deck_id=deck_id, tag_id=tag_id, interval_iso8601=interval)
+        cast(QTableView, table).setModel(CardFailureTableModel(failures))
     def _set_search_button(self):
         search_button = cast(QPushButton, self.widgets["search_failures_button"])
         search_button.clicked.connect(self._on_search)
@@ -54,7 +59,7 @@ class ExploreFailures(QDialog):
         self.ui = Ui_FailureExplorer()
         self.ui.setupUi(self)
         self.widgets: Dict[str, QWidget] = {}
-        for name in required:
+        for name in ExploreFailures.required:
             widget = self.findChild(QWidget, name)
             if widget:
                 self.widgets[name] = widget

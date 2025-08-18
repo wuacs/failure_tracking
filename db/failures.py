@@ -62,7 +62,7 @@ def failures_filtered(
         params.append(interval_iso8601["from"])
         params.append(interval_iso8601["to"])
     if tag_id is not None:
-        where.append(" ? IN (SELECT tag_id FROM failure_tags WHERE failure_id = f.failure_id)")
+        where.append(" ? IN (SELECT tag_id FROM ft_failure_tags WHERE failure_id = f.failure_id)")
         params.append(tag_id)
     if where:
         sql += " WHERE " + " AND ".join(where)

@@ -1,2 +1,2 @@
 from .failures import insert_failure, failures_filtered, ensure_schema
-from .tags import ensure_tag, list_tags, assign_tag_to_failure, remove_tag_from_failure, tags_for_failure, failures_by_tag
+from .tags import list_tags, assign_tag_to_failure, remove_tag_from_failure, tags_for_failure, failures_by_tag

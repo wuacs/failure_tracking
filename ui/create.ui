@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>378</width>
-    <height>305</height>
+    <width>764</width>
+    <height>693</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,9 +16,9 @@
   <widget class="QPushButton" name="save_failure_button">
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>120</y>
-     <width>71</width>
+     <x>210</x>
+     <y>440</y>
+     <width>91</width>
      <height>31</height>
     </rect>
    </property>
@@ -29,9 +29,9 @@
   <widget class="QPushButton" name="cancel_failure_button">
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>160</y>
-     <width>71</width>
+     <x>210</x>
+     <y>480</y>
+     <width>91</width>
      <height>31</height>
     </rect>
    </property>
@@ -40,11 +40,14 @@
    </property>
   </widget>
   <widget class="QGroupBox" name="edit_tools_groupbox">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>10</y>
-     <width>181</width>
+     <x>210</x>
+     <y>330</y>
+     <width>241</width>
      <height>61</height>
     </rect>
    </property>
@@ -56,7 +59,7 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>75</width>
+      <width>101</width>
       <height>24</height>
      </rect>
     </property>
@@ -67,9 +70,9 @@
    <widget class="QPushButton" name="add_image_button">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>120</x>
       <y>30</y>
-      <width>71</width>
+      <width>101</width>
       <height>24</height>
      </rect>
     </property>
@@ -78,13 +81,13 @@
     </property>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="failure_preview_groupbox">
+  <widget class="QGroupBox" name="failure_description_groupbox">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>0</y>
-     <width>171</width>
-     <height>301</height>
+     <x>40</x>
+     <y>10</y>
+     <width>301</width>
+     <height>311</height>
     </rect>
    </property>
    <property name="autoFillBackground">
@@ -98,19 +101,24 @@
      <rect>
       <x>0</x>
       <y>20</y>
-      <width>171</width>
-      <height>281</height>
+      <width>301</width>
+      <height>291</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
     </property>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_3">
+  <widget class="QGroupBox" name="tags_groupbox">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>70</y>
-     <width>101</width>
-     <height>181</height>
+     <x>330</x>
+     <y>390</y>
+     <width>131</width>
+     <height>191</height>
     </rect>
    </property>
    <property name="title">
@@ -119,7 +127,7 @@
    <widget class="QPushButton" name="add_tag_button">
     <property name="geometry">
      <rect>
-      <x>50</x>
+      <x>70</x>
       <y>150</y>
       <width>41</width>
       <height>21</height>
@@ -129,33 +137,36 @@
      <string>Add</string>
     </property>
    </widget>
+   <widget class="QListWidget" name="tags_list">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>60</y>
+      <width>81</width>
+      <height>91</height>
+     </rect>
+    </property>
+   </widget>
    <widget class="QComboBox" name="tags_combobox">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>30</x>
       <y>20</y>
       <width>80</width>
       <height>24</height>
      </rect>
     </property>
    </widget>
-   <widget class="QListWidget" name="tags_list">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>81</width>
-      <height>91</height>
-     </rect>
-    </property>
-   </widget>
+   <zorder>add_tag_button</zorder>
+   <zorder>tags_combobox</zorder>
+   <zorder>tags_list</zorder>
   </widget>
   <widget class="QPushButton" name="show_description_preview">
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>80</y>
-     <width>71</width>
+     <x>210</x>
+     <y>400</y>
+     <width>91</width>
      <height>31</height>
     </rect>
    </property>
@@ -163,12 +174,44 @@
     <string>PREVIEW</string>
    </property>
   </widget>
-  <zorder>failure_preview_groupbox</zorder>
+  <widget class="QGroupBox" name="failure_preview_groupbox">
+   <property name="geometry">
+    <rect>
+     <x>360</x>
+     <y>10</y>
+     <width>301</width>
+     <height>311</height>
+    </rect>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="title">
+    <string>(Preview)</string>
+   </property>
+   <widget class="QTextEdit" name="failure_description_preview">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>20</y>
+      <width>301</width>
+      <height>291</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+   </widget>
+  </widget>
+  <zorder>tags_groupbox</zorder>
+  <zorder>failure_description_groupbox</zorder>
   <zorder>save_failure_button</zorder>
   <zorder>cancel_failure_button</zorder>
   <zorder>edit_tools_groupbox</zorder>
-  <zorder>groupBox_3</zorder>
   <zorder>show_description_preview</zorder>
+  <zorder>failure_preview_groupbox</zorder>
  </widget>
  <resources/>
  <connections/>
