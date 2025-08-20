@@ -10,19 +10,29 @@ from .utils.markdown import simple_markdown_to_html
 class CreateFailure(QDialog):
     required = [
         "failure_description_text","save_failure_button","cancel_failure_button",
-        "tags_combobox","tags_list","add_tag_button",
+        "tags_combobox","tags_list","add_tag_button", "add_latex_button",
     ]
 
     def __init__(self, card_id:int, parent=None):
         super().__init__(parent or mw)
         self.ui = Ui_CreateFailure(); self.ui.setupUi(self)
         self.card_id = card_id
-        self.widgets: Dict[str, QWidget] = {n: getattr(self.ui, n) for n in self.required}
-                
+        self.widgets: Dict[str, QWidget] = {n: getattr(self.ui, n) for n in self.required} 
         self._setup_markdown_preview()
-        self._hide_unused_widgets()
-        self._setup_tags(); self._setup_save_button(); self._setup_cancel_button()
-
+        self._setup_tags()
+        self._setup_save_button()
+        self._setup_cancel_button()
+        self._setup_add_latex_button()
+    def _on_add_latex(self):
+        text_edit = cast(QTextEdit, self.widgets["failure_description_text"])
+        text_edit.insertPlainText("$$")
+        current_cursor = text_edit.textCursor()
+        current_cursor.movePosition(current_cursor.MoveOperation.Left, current_cursor.MoveMode.MoveAnchor, 1)
+        text_edit.setTextCursor(current_cursor)
+        text_edit.setFocus()
+    def _setup_add_latex_button(self):
+        btn = cast(QPushButton, self.widgets["add_latex_button"])
+        btn.clicked.connect(self._on_add_latex)
     def _setup_markdown_preview(self):
         """Set up markdown preview with LaTeX support"""
         if hasattr(self.ui, 'failure_description_preview'):
@@ -54,13 +64,6 @@ class CreateFailure(QDialog):
         # Then apply markdown formatting
         html = simple_markdown_to_html(text)
         self.preview_widget.setHtml(html)
-
-    
-    def _hide_unused_widgets(self):
-        """Hide unused widgets"""
-        # Hide some buttons but keep LaTeX button for inserting syntax
-        if hasattr(self.ui, 'show_description_preview'):
-            self.ui.show_description_preview.hide()
 
     # buttons / tags
     def _setup_save_button(self):

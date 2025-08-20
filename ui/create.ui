@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>210</x>
-     <y>440</y>
+     <y>400</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -30,7 +30,7 @@
    <property name="geometry">
     <rect>
      <x>210</x>
-     <y>480</y>
+     <y>440</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -161,19 +161,6 @@
    <zorder>tags_combobox</zorder>
    <zorder>tags_list</zorder>
   </widget>
-  <widget class="QPushButton" name="show_description_preview">
-   <property name="geometry">
-    <rect>
-     <x>210</x>
-     <y>400</y>
-     <width>91</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>PREVIEW</string>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="failure_preview_groupbox">
    <property name="geometry">
     <rect>
@@ -210,7 +197,6 @@
   <zorder>save_failure_button</zorder>
   <zorder>cancel_failure_button</zorder>
   <zorder>edit_tools_groupbox</zorder>
-  <zorder>show_description_preview</zorder>
   <zorder>failure_preview_groupbox</zorder>
  </widget>
  <resources/>

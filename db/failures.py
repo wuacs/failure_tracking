@@ -1,7 +1,7 @@
 from typing import Dict, List, Literal, Optional
 from aqt import mw
 from ..model import CardFailure
-from .tags import assign_tag_to_failure
+from .tags import assign_tag_to_failure, tag_exists
 from datetime import datetime, timezone
 
 def ensure_schema():
@@ -36,11 +36,36 @@ def insert_failure(card_id: int, tags_ids: Optional[List[int]], reason: str) -> 
     mw.col.setMod()
     return failure_id
 
+def edit_failure(failure_id: int, card_id: int, reason: Optional[str]) -> bool:
+    """
+    Edit an existing failure entry.
+    """
+    ensure_schema()
+    if not reason:
+        return False
+    mw.col.db.execute(
+        "UPDATE failures SET card_id = ?, reason = ? WHERE failure_id = ?",
+        card_id, reason.strip(), failure_id
+    )
+    mw.col.setMod()
+    return True
+
+def delete_failure(failure_id: int) -> bool:
+    """
+    Delete a failure entry, returns True if such failure_id exists and is deleted, False otherwise.
+    """
+    ensure_schema()
+    if len(failures_filtered(failure_id=failure_id))==0:
+        return False
+    mw.col.db.execute("DELETE FROM failures WHERE failure_id = ?", failure_id)
+    mw.col.setMod()
+    return True
 def failures_filtered(
     deck_id: Optional[int] = None,
     card_id: Optional[int] = None,
     tag_id: Optional[int] = None,
     limit: Optional[int] = None,
+    failure_id: Optional[int] = None,
     interval_iso8601: Optional[Dict[Literal["from", "to"], str]] = None
 ) -> list[CardFailure]:
     ensure_schema()
@@ -51,6 +76,9 @@ def failures_filtered(
     """
     where = []
     params: list = []
+    if failure_id is not None:
+        where.append("f.failure_id = ?")
+        params.append(failure_id)
     if deck_id is not None:
         where.append("c.did = ?")
         params.append(deck_id)

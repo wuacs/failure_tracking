@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS ft_tags (
 FAILURE_TAGS_SQL = """
 CREATE TABLE IF NOT EXISTS ft_failure_tags (
     failure_id INTEGER NOT NULL REFERENCES failures(failure_id) ON DELETE CASCADE,
-    tag_id INTEGER NOT NULL REFERENCES tags(tag_id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES ft_tags(tag_id) ON DELETE CASCADE,
     PRIMARY KEY (failure_id, tag_id)
 )
 """

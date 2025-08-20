@@ -1,10 +1,14 @@
-from typing import Dict, List, Optional, cast
-from aqt import QComboBox, QDialog, QModelIndex, QPushButton, QTextEdit, QVBoxLayout, QWidget, mw, QDateTime, QDateEdit, QTimeZone, QTableView
-from ..db import failures_filtered, list_tags
+from typing import Dict, List, cast
+from aqt import QComboBox, QDialog, QMessageBox, QModelIndex, QPushButton, QTextEdit, QVBoxLayout, QWidget, mw, QDateTime, QDateEdit, QTimeZone, QTableView
+from ..db import failures_filtered, list_tags, delete_failure
 from ..model import CardFailure, CardFailureTableModel, FailureTag
 from ..ui import Ui_FailureExplorer
-from .utils.latex import render_latex_to_svg, process_latex_in_text
+from .utils.latex import process_latex_in_text
 from .utils.markdown import simple_markdown_to_html
+from .edit import EditFailure
+from aqt.utils import tooltip, askUser
+
+
 
 ALL_ID = - 1
 class ExploreFailures(QDialog):
@@ -71,6 +75,37 @@ class ExploreFailures(QDialog):
         tags: List[FailureTag] = list_tags()
         for tag in tags:
             tag_combobox.addItem(tag.name, userData=tag.tag_id)
+    def _on_edit_failure(self):
+        """Open the edit dialog for the selected failure"""
+        table = cast(QTableView, self.widgets["failure_table"])
+        index = table.currentIndex()
+        if not index.isValid():
+            tooltip("Select a failure to edit.", period=1500); return
+        failure: CardFailure = self.failures_model.get_failure_at_row(index.row())
+        dialog = EditFailure(failure, parent=self)
+        dialog.exec()
+        newfailure: CardFailure = failures_filtered(failure_id=failure.failure_id)[0]
+        self.failures_model.update_row(index.row(), newfailure)
+    def _on_delete_failure(self):
+        """Delete the selected failure"""
+        table = cast(QTableView, self.widgets["failure_table"])
+        index = table.currentIndex()
+        if not index.isValid():
+            tooltip("Select a failure to delete.", period=1500); return
+        failure: CardFailure = self.failures_model.get_failure_at_row(index.row())
+         # Use Anki's askUser function instead of QMessageBox
+        if askUser(f"Are you sure you want to delete failure {failure.failure_id}?"):
+            if delete_failure(failure.failure_id):
+                tooltip(f"Failure {failure.failure_id} deleted successfully.", period=1500)
+                self.failures_model.remove_row(index.row())
+            else:
+                tooltip("Failed to delete failure.", period=1500)
+    def _set_edit_button(self):
+        edit_button = cast(QPushButton, self.widgets["edit_selected_failure"])
+        edit_button.clicked.connect(self._on_edit_failure)
+    def _set_delete_button(self):
+        delete_button = cast(QPushButton, self.widgets["delete_selected_failure"])
+        delete_button.clicked.connect(self._on_delete_failure)
     def __init__(self, parent=None):
         super().__init__(parent or mw)
         self.ui = Ui_FailureExplorer()
@@ -80,3 +115,5 @@ class ExploreFailures(QDialog):
         self._set_deck_filter()
         self._set_tag_filter()
         self._set_search_button()
+        self._set_edit_button()
+        self._set_delete_button()
