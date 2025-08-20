@@ -75,13 +75,8 @@
       <string/>
      </property>
      <property name="currentText">
-      <string>ALL</string>
+      <string/>
      </property>
-     <item>
-      <property name="text">
-       <string>ALL</string>
-      </property>
-     </item>
     </widget>
    </widget>
    <widget class="QGroupBox" name="tag_filter_group">
@@ -105,11 +100,6 @@
        <height>24</height>
       </rect>
      </property>
-     <item>
-      <property name="text">
-       <string>ALL</string>
-      </property>
-     </item>
     </widget>
    </widget>
    <widget class="QGroupBox" name="filter_date_combobox">
