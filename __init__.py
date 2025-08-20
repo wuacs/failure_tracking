@@ -1,11 +1,5 @@
-# __init__.py
 import os
 import sys
-from aqt import QDialog, QVBoxLayout, QWebEngineView, mw, gui_hooks
-from typing import Literal
-from aqt.qt import QAction
-from .dialogs import CreateFailure, ExploreFailures
-from .db import ensure_schema
 
 def _setup_libs():
     """Add the bundled libraries to Python path"""
@@ -13,6 +7,17 @@ def _setup_libs():
     if os.path.exists(libs_dir) and libs_dir not in sys.path:
         sys.path.insert(0, libs_dir)
         print(f"DEBUG: Added {libs_dir} to Python path")
+
+_setup_libs()
+
+
+
+from aqt import QDialog, QVBoxLayout, QWebEngineView, mw, gui_hooks
+from typing import Literal
+from aqt.qt import QAction
+from .dialogs import CreateFailure, ExploreFailures
+from .db import ensure_schema
+
 
 def _show_explorer():
     ExploreFailures().exec()
@@ -37,6 +42,5 @@ def _init_after_profile():
     ensure_schema()
     _install_menu()
     _wrap_answer()
-    _setup_libs()
 
 gui_hooks.profile_did_open.append(lambda _ = None: _init_after_profile())

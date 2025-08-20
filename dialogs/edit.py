@@ -6,7 +6,6 @@ from ..model import CardFailure
 from PyQt6.QtCore import QTimer
 from .utils.latex import process_latex_in_text
 from .utils.markdown import simple_markdown_to_html
-
 class EditFailure(QDialog):
     required = [
         "failure_description_text", "save_failure_button", "cancel_failure_button"

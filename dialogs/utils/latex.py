@@ -2,8 +2,22 @@ import base64
 import hashlib
 import io
 import re
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('Agg')  # Use non-GUI backend
+from aqt import QApplication, QPalette
 
 _global_cache = {}
+
+def _palette_text_color_hex():
+    if not QApplication:
+        return "#000000"
+    app = QApplication.instance()
+    if not app:
+        return "#000000"
+    pal = app.palette()
+    c = pal.color(QPalette.ColorRole.Text)
+    return f"#{c.red():02x}{c.green():02x}{c.blue():02x}"
 
 def render_latex_to_svg(latex_code: str, display_mode: bool = False) -> str:
     """Convert LaTeX to SVG data URL for use in img tags"""
@@ -14,14 +28,7 @@ def render_latex_to_svg(latex_code: str, display_mode: bool = False) -> str:
             return _global_cache[cache_key]
 
         print(f"DEBUG: Attempting to render LaTeX: '{latex_code}'")
-        
-        # Import from bundled matplotlib
-        import matplotlib
-        import matplotlib.pyplot as plt
-        matplotlib.use('Agg')  # Use non-GUI backend
-        
-        print(f"DEBUG: matplotlib imported successfully from: {matplotlib.__file__}")
-        
+                
         # Configure matplotlib for LaTeX
         plt.rcParams['text.usetex'] = False
         plt.rcParams['mathtext.fontset'] = 'cm'
@@ -30,16 +37,14 @@ def render_latex_to_svg(latex_code: str, display_mode: bool = False) -> str:
         fig, ax = plt.subplots(figsize=(1, 1))
         
         fontsize = 28 if display_mode else 22
-        
-        print(f"DEBUG: Figure created, adding text: ${latex_code}$")
-        
+                
         # Render the text
         text_obj = ax.text(0.5, 0.5, f'${latex_code}$', 
                         horizontalalignment='center', 
                         verticalalignment='center',
                         fontsize=fontsize,
                         transform=ax.transAxes,
-                        color='white') 
+                        color=_palette_text_color_hex()) 
 
         ax.axis('off')
         
