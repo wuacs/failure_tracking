@@ -7,8 +7,10 @@ from .utils.latex import process_latex_in_text
 from .utils.markdown import simple_markdown_to_html
 from .edit import EditFailure
 from aqt.utils import tooltip, askUser
-
-
+from aqt.browser.previewer import Previewer
+from aqt import dialogs
+from anki.cards import Card
+from aqt.browser.card_info import CardInfoDialog
 
 ALL_ID = - 1
 class ExploreFailures(QDialog):
@@ -55,17 +57,28 @@ class ExploreFailures(QDialog):
         table.doubleClicked.connect(self._on_failure_double_clicked)
     def _on_failure_double_clicked(self, index: QModelIndex):
         """Handle double-click on a failure entry"""
-        preview = QDialog(self)
-        layout = QVBoxLayout(preview)
-        text = QTextEdit()
-        if index.column() != 2: #fix this magic number
-            text.setText(str(self.failures_model.data(index)))
-        else:
-            text.setHtml(simple_markdown_to_html(process_latex_in_text(self.failures_model.data(index))))
-        text.setReadOnly(True)
-        layout.addWidget(text)
-        preview.setWindowTitle("Failure Details")
-        preview.exec()
+        if index.column() == CardFailureTableModel.COLUMN_MAPPING["card_id"]:
+            card: Card = mw.col.get_card( self.failures_model.data(index))
+            dlg = QDialog(self)
+            dlg.setWindowTitle(f"Card {card.id} Preview")
+            lay = QVBoxLayout(dlg)
+            box = QTextEdit()
+            box.setReadOnly(True)
+            box.setHtml(card.a())
+            lay.addWidget(box)
+            dlg.exec()
+        else: 
+            preview = QDialog(self)
+            layout = QVBoxLayout(preview)
+            text = QTextEdit()
+            text.setReadOnly(True)
+            if index.column() == CardFailureTableModel.COLUMN_MAPPING["reason"]: #fix this magic number
+                text.setHtml(simple_markdown_to_html(process_latex_in_text(self.failures_model.data(index))))
+            else:
+                text.setText(str(self.failures_model.data(index)))
+            layout.addWidget(text)
+            preview.setWindowTitle("Details")
+            preview.exec()
     def _set_search_button(self):
         search_button = cast(QPushButton, self.widgets["search_failures_button"])
         search_button.clicked.connect(self._on_search)

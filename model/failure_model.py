@@ -5,6 +5,15 @@ from aqt import QAbstractTableModel
 from .failure import CardFailure
 
 class CardFailureTableModel(QAbstractTableModel):
+
+    COLUMN_MAPPING = {
+        "failure_id": 0,
+        "card_id": 1,
+        "reason": 2,
+        "created_at": 3,
+    }
+
+
     def __init__(self, failures, parent=None):
         super().__init__(parent)
         self._failures = failures

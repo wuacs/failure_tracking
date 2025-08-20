@@ -17,7 +17,6 @@ class EditFailure(QDialog):
         self.ui = Ui_EditFailure()
         self.ui.setupUi(self)
         self.failure = failure
-        print("DEBUG,", self.failure.reason)
         self.widgets: Dict[str, QWidget] = {n: getattr(self.ui, n) for n in self.required}
         self._setup_markdown_preview()
         self._populate_fields()
