@@ -28,9 +28,7 @@ def _wrap_answer():
     original = mw.reviewer._answerCard
     def wrapped(ease: Literal[1,2,3,4]):
         if ease in (1,2):
-            ok = CreateFailure.prompt(card_id=mw.reviewer.card.id)
-            if not ok:
-                return
+            CreateFailure.prompt(card_id=mw.reviewer.card.id)
         return original(ease)
     mw.reviewer._answerCard = wrapped
     mw.reviewer._failure_wrap_installed = True
